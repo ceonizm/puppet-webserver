@@ -1,12 +1,15 @@
-define website (
-  Array[String] $urls        = [],
-  $website_name              = $title,
-  String $db_user            = undef,
-  String $db_pass            = undef,
-  Optional[String] $db_host  = 'localhost',
-  Optional[String] $path     = "/var/www/$title/www",
-  Optional[String] $fpm_pool = "fpm"
+define webserver::website (
+  Array[String] $urls          = [],
+  $website_name                = $title,
+  $unix_user                   = undef,
+  Optional[String] $unix_group = $unix_user,
+  String $db_user              = undef,
+  String $db_pass              = undef,
+  Optional[String] $db_host    = 'localhost',
+  Optional[String] $path       = "/var/www/$title/www",
+  Optional[String] $fpm_pool   = "fpm"
 ) {
+
 
   nginx::resource::server { $title:
     server_name => $urls,

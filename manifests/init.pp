@@ -43,13 +43,10 @@
 # Copyright 2017 Your name here, unless otherwise noted.
 #
 class webserver (
-  String $website_name  = undef,
-  String $path          = undef,
-  String $db_name       = undef,
-  String $db_user       = undef,
-  String $db_password   = undef
-){
+  Optional[String] $server_name  = undef,
+) {
   contain '::website::package'
+
 
 }
 
