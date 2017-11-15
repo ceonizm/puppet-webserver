@@ -1,4 +1,4 @@
-class website::package {
+class webserver::package {
 
 
   include apt
@@ -112,4 +112,13 @@ class website::package {
     gzip_types             =>
       'text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/x-icon application/vnd.ms-fontobject font/opentype application/x-font-ttf'
   }
+
+  nginx::resource::upstream { 'fpm':
+    members => [
+      'unix:/var/run/php7.0-fpm-www.sock',
+    ]
+  }
+
+
 }
+

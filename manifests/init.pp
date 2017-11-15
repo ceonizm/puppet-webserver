@@ -45,7 +45,7 @@
 class webserver (
   Optional[String] $server_name  = undef,
 ) {
-  contain '::website::package'
+  contain '::webserver::package'
 
 
 }
