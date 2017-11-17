@@ -1,4 +1,4 @@
-class website::package {
+class webserver::package {
 
 
   include apt
@@ -125,3 +125,4 @@ class website::package {
     ]
   }
 }
+

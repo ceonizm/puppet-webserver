@@ -14,8 +14,14 @@ define webserver::website (
     $urls = [$title]
   }
 
+  if( size($urls) == 0 ) {
+    $_urls = [$title]
+  } else {
+    $_urls = $urls
+  }
+
   nginx::resource::server { $title:
-    server_name => $urls,
+    server_name => $_urls,
     www_root    => $path,
     listen_port => 80,
     ssl         => false,
@@ -25,7 +31,7 @@ define webserver::website (
     error_log   => "/var/log/nginx/$title/error.log",
   }
 
-  file { "/var/log/nginx/$title":
+  file { "/var/log/nginx/${title}":
     ensure => 'directory',
     owner  => $nginx::params::super_user
   }
