@@ -10,9 +10,6 @@ define webserver::website (
   Optional[String] $fpm_pool   = "fpm"
 ) {
 
-  if( size($urls) == 0 ) {
-    $urls = [$title]
-  }
 
   if( size($urls) == 0 ) {
     $_urls = [$title]

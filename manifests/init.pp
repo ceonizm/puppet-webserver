@@ -46,9 +46,9 @@ class webserver (
 
   Optional[String] $db_root_password = undef,
   Optional[String] $server_name      = undef,
-  Array[Hash] $fpm_pools             = undef
+  Optional[Hash] $fpm_pools          = undef
 ) inherits webserver::params {
-  contain '::website::package'
+  contain '::webserver::package'
 
 
 
