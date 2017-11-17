@@ -21,7 +21,7 @@ class website::package {
     package_name     => 'mariadb-server',
     #    package_ensure   => '10.1.14+maria-1~trusty',
     service_name     => 'mysql',
-    root_password    => 'rYeNumJJaL5PbT',
+    root_password    => $webserver::db_root_password,
     override_options => {
       mysqld      => {
         'log-error' => '/var/log/mysql/mariadb.log',
@@ -54,13 +54,19 @@ class website::package {
     php_version => '7.0',
   }
 
+
+
+  if( $webserver::fpm_pools ) {
+    $fpm_pools = deep_merge( $default_fpm_pools, $webserver::fpm_pools)
+  } else {
+    $fpm_pools = $webserver::params::default_fpm_pools
+  }
+
   class { '::php':
     ensure       => 'latest',
     manage_repos => true,
     fpm          => true,
-    fpm_pools    => {
-      'www' => { listen => '/var/run/php7.0-fpm-www.sock', }
-    },
+    fpm_pools    => $fpm_pools,
     dev          => false,
     extensions   => {
       imagick       => {
@@ -111,5 +117,11 @@ class website::package {
     gzip_proxied           => 'any',
     gzip_types             =>
       'text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/x-icon application/vnd.ms-fontobject font/opentype application/x-font-ttf'
+  }
+
+  nginx::resource::upstream { 'fpm':
+    members => [
+      'unix:/var/run/php7.0-fpm-www.sock',
+    ]
   }
 }

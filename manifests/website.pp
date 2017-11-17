@@ -10,6 +10,9 @@ define webserver::website (
   Optional[String] $fpm_pool   = "fpm"
 ) {
 
+  if( size($urls) == 0 ) {
+    $urls = [$title]
+  }
 
   nginx::resource::server { $title:
     server_name => $urls,

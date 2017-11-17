@@ -43,8 +43,10 @@
 # Copyright 2017 Your name here, unless otherwise noted.
 #
 class webserver (
-  Optional[String] $server_name  = undef,
-) {
+  Optional[String] $db_root_password = undef,
+  Optional[String] $server_name      = undef,
+  Array[Hash] $fpm_pools             = undef
+) inherits webserver::params {
   contain '::website::package'
 
 
