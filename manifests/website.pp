@@ -44,26 +44,26 @@ define webserver::website (
     group  => $::nginx::log_group
   }
 
-  nginx::resource::location { 'favico':
+  nginx::resource::location { "${title}.favico":
     server        => $title,
     location      => '/favicon.ico',
     log_not_found => 'off',
     access_log    => 'off'
   }
-  nginx::resource::location { 'robots.txt':
+  nginx::resource::location { "${title}.robots.txt":
     server        => $title,
     location      => '/robots.txt',
     log_not_found => 'off',
     access_log    => 'off'
   }
 
-  nginx::resource::location { 'php':
+  nginx::resource::location { "${title}.php":
     server   => $title,
     location => '~ \.php$',
     fastcgi  => 'fpm',
   }
 
-  nginx::resource::location { 'assets':
+  nginx::resource::location { "${title}.assets":
     server        => $title,
     location      => '~* \.(js|css|png|jpg|jpeg|gif|ico)$',
     expires       => 'max',
