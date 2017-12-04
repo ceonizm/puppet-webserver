@@ -2,14 +2,22 @@ define webserver::website (
   Array[String] $urls          = [],
   $website_name                = $title,
   $unix_user                   = undef,
+  $unix_password               = undef,
   Optional[String] $unix_group = $unix_user,
   String $db_user              = undef,
   String $db_pass              = undef,
   Optional[String] $db_host    = 'localhost',
-  Optional[String] $path       = "/var/www/$title/www",
+  Optional[String] $path       = "/var/www/$title",
   Optional[String] $fpm_pool   = "fpm"
 ) {
 
+
+  user { $unix_user:
+    ensure   => 'present',
+    home     => $path,
+    groups   => 'web',
+    password => $unix_password
+  }
 
   if( size($urls) == 0 ) {
     $_urls = [$title]
@@ -18,8 +26,9 @@ define webserver::website (
   }
 
   nginx::resource::server { $title:
+
     server_name => $_urls,
-    www_root    => $path,
+    www_root    => "$path/www",
     listen_port => 80,
     ssl         => false,
     ssl_cert    => false,

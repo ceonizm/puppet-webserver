@@ -3,6 +3,11 @@ class webserver::package {
 
   include apt
 
+  group { 'web':
+    ensure => 'present',
+    gid    => '502',
+  }
+
   apt::source { 'mariadb':
     location => 'http://mirror.klaus-uwe.me/mariadb/repo/10.2/ubuntu',
     release  => $::lsbdistcodename,
