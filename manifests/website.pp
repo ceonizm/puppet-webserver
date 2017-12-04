@@ -27,15 +27,15 @@ define webserver::website (
   }
 
   nginx::resource::server { $title:
-
-    server_name => $_urls,
-    www_root    => "$path/www",
-    listen_port => 80,
-    ssl         => false,
-    ssl_cert    => false,
-    try_files   => ['$uri', '$uri/', 'index.php?$args'],
-    access_log  => "/var/log/nginx/$title/access.log",
-    error_log   => "/var/log/nginx/$title/error.log",
+    use_default_location => false,
+    server_name          => $_urls,
+    www_root             => "$path/www",
+    listen_port          => 80,
+    ssl                  => false,
+    ssl_cert             => false,
+    try_files            => ['$uri', '$uri/', 'index.php?$args'],
+    access_log           => "/var/log/nginx/$title/access.log",
+    error_log            => "/var/log/nginx/$title/error.log",
   }
 
   file { "${::nginx::log_dir}/${title}":
