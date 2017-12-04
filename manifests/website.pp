@@ -44,6 +44,20 @@ define webserver::website (
     group  => $::nginx::log_group
   }
 
+  file { "${path}":
+    ensure => 'directory',
+    mode   => '0755',
+    owner => $unix_user,
+    group => $unix_group
+  }
+
+  file { "${path}/www":
+    ensure => 'directory',
+    mode   => '0755',
+    owner => $unix_user,
+    group => $unix_group
+  }
+
   nginx::resource::location { "${title}.favico":
     server        => $title,
     location      => '/favicon.ico',
