@@ -28,9 +28,11 @@ define webserver::website (
     error_log   => "/var/log/nginx/$title/error.log",
   }
 
-  file { "/var/log/nginx/${title}":
+  file { "${::nginx::log_dir}/${title}":
     ensure => 'directory',
-    owner  => $nginx::params::super_user
+    mode   => $::nginx::log_mode,
+    owner  => $::nginx::daemon_user,
+    group  => $::nginx::log_group
   }
 
   nginx::resource::location { 'favico':
