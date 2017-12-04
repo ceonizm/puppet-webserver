@@ -6,6 +6,7 @@ define webserver::website (
   Optional[String] $unix_group = $unix_user,
   String $db_user              = undef,
   String $db_pass              = undef,
+  Optional[String] $db_name    = undef,
   Optional[String] $db_host    = 'localhost',
   Optional[String] $path       = "/var/www/$title",
   Optional[String] $fpm_pool   = "fpm"
@@ -84,8 +85,17 @@ define webserver::website (
     log_not_found => 'off'
   }
 
-  mysql::db { "${title}:db":
-    user     => $db_user,
-    password => $db_pass,
+  if( $db_name ) {
+    mysql::db { "${title}":
+      dbname   => $db_name,
+      user     => $db_user,
+      password => $db_pass,
+    }
+  } else {
+    mysql::db { "${title}":
+      user     => $db_user,
+      password => $db_pass,
+    }
   }
+
 }
