@@ -129,5 +129,12 @@ class webserver::package {
       'unix:/var/run/php7.0-fpm-www.sock',
     ]
   }
+
+  file { "/var/www":
+    ensure => 'directory',
+    mode   => '0755',
+    owner => 'root',
+    group => 'web'
+  }
 }
 
