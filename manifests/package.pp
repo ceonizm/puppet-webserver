@@ -67,6 +67,10 @@ class webserver::package {
     $fpm_pools = $webserver::params::default_fpm_pools
   }
 
+  package { 'imagick':
+    ensure => 'installed'
+  }
+
   class { '::php':
     ensure       => 'latest',
     manage_repos => true,

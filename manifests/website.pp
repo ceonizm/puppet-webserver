@@ -65,11 +65,18 @@ define webserver::website (
     log_not_found => 'off',
     access_log    => 'off'
   }
+
   nginx::resource::location { "${title}.robots.txt":
     server        => $title,
     location      => '/robots.txt',
     log_not_found => 'off',
     access_log    => 'off'
+  }
+
+  nginx::resource::location { "${title}.default":
+    server   => $title,
+    location => '/',
+    try_files => ['$uri', 'index.php?$query_string']
   }
 
   nginx::resource::location { "${title}.php":
@@ -78,9 +85,24 @@ define webserver::website (
     fastcgi  => 'fpm',
   }
 
+  nginx::resource::location { "${title}.drupal":
+    location => '@drupal',
+    rewrite_rules => ['^/(.*)$ /index.php?q=$1'],
+  }
+
+  nginx::resource::location { "${title}.imagestyles":
+    try_files => ['$uri', '@drupal']
+  }
+
+  nginx::resource::location{ "${title}.private-files":
+    location => '~ ^(/[a-z\-]+)?/system/files/',
+    rewrite_rules => ['^/(.*)$ /index.php?q=$1'],
+  }
+
   nginx::resource::location { "${title}.assets":
     server        => $title,
     location      => '~* \.(js|css|png|jpg|jpeg|gif|ico)$',
+    try_files => ['$uri', '@drupal'],
     expires       => 'max',
     log_not_found => 'off'
   }
