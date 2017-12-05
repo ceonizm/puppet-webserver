@@ -59,7 +59,21 @@ define webserver::website (
     group => $unix_group
   }
 
+  nginx::resource::location { "${title}.default":
+    index_files   => [],
+    server   => $title,
+    location => '/',
+    try_files => ['$uri', '/index.php?$query_string']
+  }
+ 
+  nginx::resource::location { "${title}.htaccess":
+    index_files   => [],
+    server        => $title,
+    location      => '~ \.htaccess$',
+    location_deny => ['all'],
+  } 
   nginx::resource::location { "${title}.favico":
+    index_files   => [],
     server        => $title,
     location      => '/favicon.ico',
     log_not_found => 'off',
@@ -67,42 +81,46 @@ define webserver::website (
   }
 
   nginx::resource::location { "${title}.robots.txt":
+    index_files   => [],
     server        => $title,
     location      => '/robots.txt',
     log_not_found => 'off',
     access_log    => 'off'
   }
 
-  nginx::resource::location { "${title}.default":
-    server   => $title,
-    location => '/',
-    try_files => ['$uri', 'index.php?$query_string']
-  }
 
   nginx::resource::location { "${title}.php":
+    index_files   => [],
     server   => $title,
     location => '~ \.php$',
     fastcgi  => 'fpm',
   }
 
   nginx::resource::location { "${title}.drupal":
-    location => '@drupal',
+    index_files   => [],
+    server        => $title,
+    location      => '@drupal',
     rewrite_rules => ['^/(.*)$ /index.php?q=$1'],
   }
 
   nginx::resource::location { "${title}.imagestyles":
+    index_files   => [],
+    server    => $title,
     try_files => ['$uri', '@drupal']
   }
 
   nginx::resource::location{ "${title}.private-files":
-    location => '~ ^(/[a-z\-]+)?/system/files/',
+    index_files   => [],
+    server        => $title,
+    location      => '~ ^(/[a-z\-]+)?/system/files/',
     rewrite_rules => ['^/(.*)$ /index.php?q=$1'],
   }
 
   nginx::resource::location { "${title}.assets":
+    index_files   => [],
     server        => $title,
-    location      => '~* \.(js|css|png|jpg|jpeg|gif|ico)$',
-    try_files => ['$uri', '@drupal'],
+    location      => '~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$',
+    try_files     => ['$uri', '@drupal'],
     expires       => 'max',
     log_not_found => 'off'
   }
