@@ -93,7 +93,7 @@ define webserver::website (
     index_files   => [],
     server   => $title,
     location => '~ \.php$',
-    fastcgi  => 'fpm',
+    fastcgi  => $fpm_pool,
   }
 
   nginx::resource::location { "${title}.drupal":
@@ -106,6 +106,7 @@ define webserver::website (
   nginx::resource::location { "${title}.imagestyles":
     index_files   => [],
     server    => $title,
+    location  => '~ ^/sites/.*/files/styles/',
     try_files => ['$uri', '@drupal']
   }
 
