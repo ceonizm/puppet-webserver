@@ -17,7 +17,7 @@ define webserver::website (
     ensure   => 'present',
     home     => $path,
     groups   => 'web',
-    password => $unix_password
+    password => pw_hash(  $unix_password, 'SHA-512', 'mysalt')
   }
 
   if( size($urls) == 0 ) {
