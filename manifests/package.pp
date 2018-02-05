@@ -104,7 +104,7 @@ class webserver::package {
       },
       mcrypt        => {
         provider       => 'apt',
-        package_prefix => 'php-',
+        package_prefix => 'php7.0-',
       },
       igbinary      => {
         provider       => 'apt',

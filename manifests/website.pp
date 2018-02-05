@@ -9,7 +9,8 @@ define webserver::website (
   Optional[String] $db_name    = undef,
   Optional[String] $db_host    = 'localhost',
   Optional[String] $path       = "/var/www/$title",
-  Optional[String] $fpm_pool   = "fpm"
+  Optional[String] $fpm_pool   = "fpm",
+  Optional[Integer] $drupal_version = 7
 ) {
 
 
@@ -59,12 +60,23 @@ define webserver::website (
     group => $unix_group
   }
 
+if( $drupal_version >= 7 ) {
   nginx::resource::location { "${title}.default":
     index_files   => [],
     server   => $title,
     location => '/',
     try_files => ['$uri', '/index.php?$query_string']
   }
+} else {
+
+  nginx::resource::location { "${title}.default":
+    index_files   => [],
+    server   => $title,
+    location => '/',
+    try_files => ['$uri', '@drupal']
+  }
+
+}
  
   nginx::resource::location { "${title}.htaccess":
     index_files   => [],
