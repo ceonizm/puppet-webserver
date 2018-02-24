@@ -1,16 +1,18 @@
-define webserver::website (
-  Array[String] $urls          = [],
-  $website_name                = $title,
-  $unix_user                   = undef,
-  $unix_password               = undef,
-  Optional[String] $unix_group = $unix_user,
-  String $db_user              = undef,
-  String $db_pass              = undef,
-  Optional[String] $db_name    = undef,
-  Optional[String] $db_host    = 'localhost',
-  Optional[String] $path       = "/var/www/$title",
-  Optional[String] $fpm_pool   = "fpm",
-  Optional[Integer] $drupal_version = 7
+class webserver::website (
+  Array[String] $urls             = [],
+  $website_name                   = $title,
+  $unix_user                      = undef,
+  $unix_password                  = undef,
+  Boolean $https                  = false,
+  Optional[String] $ssl_cert      = undef,
+  Optional[String] $ssl_key       = undef,
+  Optional[String] $unix_group    = $unix_user,
+  String $db_user                 = undef,
+  String $db_pass                 = undef,
+  Optional[String] $db_name       = undef,
+  Optional[String] $db_host       = 'localhost',
+  Optional[String] $path          = "/var/www/$title",
+  Optional[String] $fpm_pool_name = "fpm",
 ) {
 
 
@@ -18,7 +20,7 @@ define webserver::website (
     ensure   => 'present',
     home     => $path,
     groups   => 'web',
-    password => pw_hash(  $unix_password, 'SHA-512', 'mysalt')
+    password => pw_hash($unix_password, 'SHA-512', 'mysalt')
   }
 
   if( size($urls) == 0 ) {
@@ -39,6 +41,31 @@ define webserver::website (
     error_log            => "/var/log/nginx/$title/error.log",
   }
 
+
+
+  if( $https ) {
+
+  } else {
+
+  }
+  if ( $https ) {
+    $servers = [ "${title}", "${title}.ssl"]
+    nginx::resource::server { "$title.ssl":
+      use_default_location => false,
+      server_name          => $_urls,
+      www_root             => "$path/www",
+      listen_port          => 443,
+      ssl                  => true,
+      ssl_cert             => $ssl_cert,
+      ssl_key              => $ssl_key,
+      try_files            => ['$uri', '$uri/', 'index.php?$args'],
+      access_log           => "/var/log/nginx/${title}.ssl/access.log",
+      error_log            => "/var/log/nginx/${title}.ssl/error.log",
+    }
+  } else {
+    $servers = [ "${title}"]
+  }
+
   file { "${::nginx::log_dir}/${title}":
     ensure => 'directory',
     mode   => $::nginx::log_mode,
@@ -49,95 +76,16 @@ define webserver::website (
   file { "${path}":
     ensure => 'directory',
     mode   => '0755',
-    owner => $unix_user,
-    group => $unix_group
+    owner  => $unix_user,
+    group  => $unix_group
   }
 
   file { "${path}/www":
     ensure => 'directory',
     mode   => '0755',
-    owner => $unix_user,
-    group => $unix_group
+    owner  => $unix_user,
+    group  => $unix_group
   }
-
-if( $drupal_version >= 7 ) {
-  nginx::resource::location { "${title}.default":
-    index_files   => [],
-    server   => $title,
-    location => '/',
-    try_files => ['$uri', '/index.php?$query_string']
-  }
-} else {
-
-  nginx::resource::location { "${title}.default":
-    index_files   => [],
-    server   => $title,
-    location => '/',
-    try_files => ['$uri', '@drupal']
-  }
-
-}
- 
-  nginx::resource::location { "${title}.htaccess":
-    index_files   => [],
-    server        => $title,
-    location      => '~ \.htaccess$',
-    location_deny => ['all'],
-  } 
-  nginx::resource::location { "${title}.favico":
-    index_files   => [],
-    server        => $title,
-    location      => '/favicon.ico',
-    log_not_found => 'off',
-    access_log    => 'off'
-  }
-
-  nginx::resource::location { "${title}.robots.txt":
-    index_files   => [],
-    server        => $title,
-    location      => '/robots.txt',
-    log_not_found => 'off',
-    access_log    => 'off'
-  }
-
-
-  nginx::resource::location { "${title}.php":
-    index_files   => [],
-    server   => $title,
-    location => '~ \.php$',
-    fastcgi  => $fpm_pool,
-  }
-
-  nginx::resource::location { "${title}.drupal":
-    index_files   => [],
-    server        => $title,
-    location      => '@drupal',
-    rewrite_rules => ['^/(.*)$ /index.php?q=$1'],
-  }
-
-  nginx::resource::location { "${title}.imagestyles":
-    index_files   => [],
-    server    => $title,
-    location  => '~ ^/sites/.*/files/styles/',
-    try_files => ['$uri', '@drupal']
-  }
-
-  nginx::resource::location{ "${title}.private-files":
-    index_files   => [],
-    server        => $title,
-    location      => '~ ^(/[a-z\-]+)?/system/files/',
-    rewrite_rules => ['^/(.*)$ /index.php?q=$1'],
-  }
-
-  nginx::resource::location { "${title}.assets":
-    index_files   => [],
-    server        => $title,
-    location      => '~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$',
-    try_files     => ['$uri', '@drupal'],
-    expires       => 'max',
-    log_not_found => 'off'
-  }
-
   if( $db_name ) {
     mysql::db { "${title}":
       dbname   => $db_name,
@@ -151,4 +99,36 @@ if( $drupal_version >= 7 ) {
     }
   }
 
+  /* generating locations */
+  $servers.each | String $serverName | {
+
+    nginx::resource::location { "${serverName}.htaccess":
+      index_files   => [],
+      server        => $serverName,
+      location      => '~ \.htaccess$',
+      location_deny => ['all'],
+    }
+    nginx::resource::location { "${serverName}.favico":
+      index_files   => [],
+      server        => $serverName,
+      location      => '/favicon.ico',
+      log_not_found => 'off',
+      access_log    => 'off'
+    }
+
+    nginx::resource::location { "${serverName}.robots.txt":
+      index_files   => [],
+      server        => $serverName,
+      location      => '/robots.txt',
+      log_not_found => 'off',
+      access_log    => 'off'
+    }
+
+    nginx::resource::location { "${serverName}.php":
+      index_files => [],
+      server      => $serverName,
+      location    => '~ \.php$',
+      fastcgi     => $fpm_pool_name,
+    }
+  }
 }
