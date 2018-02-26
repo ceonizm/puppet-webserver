@@ -3,6 +3,7 @@ class webserver::website (
   $website_name                   = $title,
   $unix_user                      = undef,
   $unix_password                  = undef,
+  Boolean $default                = false,
   Boolean $https                  = false,
   Optional[String] $ssl_cert      = undef,
   Optional[String] $ssl_key       = undef,
@@ -11,7 +12,7 @@ class webserver::website (
   String $db_pass                 = undef,
   Optional[String] $db_name       = undef,
   Optional[String] $db_host       = 'localhost',
-  Optional[String] $path          = "/var/www/$title",
+  Optional[String] $path          = "/var/www/$website_name",
   Optional[String] $fpm_pool_name = "fpm",
 ) {
 
@@ -24,33 +25,34 @@ class webserver::website (
   }
 
   if( size($urls) == 0 ) {
-    $_urls = [$title]
+    $_urls = [$website_name]
   } else {
     $_urls = $urls
   }
 
-  nginx::resource::server { $title:
+  if( $default == true ) {
+    $listen_options="default_server"
+  } else {
+    $listen_options=undef
+  }
+  nginx::resource::server { $website_name:
     use_default_location => false,
     server_name          => $_urls,
     www_root             => "$path/www",
     listen_port          => 80,
+    listen_options       => $listen_options,
     ssl                  => false,
     ssl_cert             => false,
     try_files            => ['$uri', '$uri/', 'index.php?$args'],
-    access_log           => "/var/log/nginx/$title/access.log",
-    error_log            => "/var/log/nginx/$title/error.log",
+    access_log           => "/var/log/nginx/$website_name/access.log",
+    error_log            => "/var/log/nginx/$website_name/error.log",
   }
 
 
 
-  if( $https ) {
-
-  } else {
-
-  }
   if ( $https ) {
-    $servers = [ "${title}", "${title}.ssl"]
-    nginx::resource::server { "$title.ssl":
+    $servers = [ "${website_name}", "${website_name}.ssl"]
+    nginx::resource::server { "$website_name.ssl":
       use_default_location => false,
       server_name          => $_urls,
       www_root             => "$path/www",
@@ -59,14 +61,14 @@ class webserver::website (
       ssl_cert             => $ssl_cert,
       ssl_key              => $ssl_key,
       try_files            => ['$uri', '$uri/', 'index.php?$args'],
-      access_log           => "/var/log/nginx/${title}.ssl/access.log",
-      error_log            => "/var/log/nginx/${title}.ssl/error.log",
+      access_log           => "/var/log/nginx/${website_name}.ssl/access.log",
+      error_log            => "/var/log/nginx/${website_name}.ssl/error.log",
     }
   } else {
-    $servers = [ "${title}"]
+    $servers = [ "${website_name}"]
   }
 
-  file { "${::nginx::log_dir}/${title}":
+  file { "${::nginx::log_dir}/${website_name}":
     ensure => 'directory',
     mode   => $::nginx::log_mode,
     owner  => $::nginx::daemon_user,
@@ -87,13 +89,13 @@ class webserver::website (
     group  => $unix_group
   }
   if( $db_name ) {
-    mysql::db { "${title}":
+    mysql::db { "${website_name}":
       dbname   => $db_name,
       user     => $db_user,
       password => $db_pass,
     }
   } else {
-    mysql::db { "${title}":
+    mysql::db { "${website_name}":
       user     => $db_user,
       password => $db_pass,
     }
