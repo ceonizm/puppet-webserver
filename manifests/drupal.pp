@@ -1,4 +1,4 @@
-define drupal (
+define webserver::drupal (
 
   Array[String] $urls          = [],
   $website_name                = $title,
@@ -17,7 +17,11 @@ define drupal (
   Optional[Integer] $version   = 7
 ) {
 
-  class { 'webserver::website':
+  package { 'drush':
+    ensure => 'installed'
+  }
+
+  webserver::website { $title:
     urls          => $urls,
     website_name  => $website_name,
     unix_user     => $unix_user,
@@ -33,6 +37,8 @@ define drupal (
     path          => $path,
     fpm_pool_name => $fpm_pool
   }
+  
+
 
   if( $https ) {
     $servers = [ "${title}", "${title}.ssl"]

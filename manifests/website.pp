@@ -1,4 +1,4 @@
-class webserver::website (
+define webserver::website (
   Array[String] $urls             = [],
   $website_name                   = $title,
   $unix_user                      = undef,
