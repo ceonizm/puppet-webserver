@@ -17,9 +17,7 @@ define webserver::drupal (
   Optional[Integer] $version   = 7
 ) {
 
-  package { 'drush':
-    ensure => 'installed'
-  }
+  ensure_packages(['drush'], {'ensure'=>'present'})
 
   webserver::website { $title:
     urls          => $urls,
