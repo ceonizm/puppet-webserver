@@ -56,7 +56,7 @@ class webserver::package {
   Class['::mysql::client']
 
   class { '::php::globals':
-    php_version => '7.0',
+    php_version => $webserver::php_version,
   }
 
 
@@ -72,7 +72,7 @@ class webserver::package {
   }
 
   class { '::php':
-    ensure       => 'latest',
+    ensure       => 'installed',
     manage_repos => true,
     fpm          => true,
     fpm_pools    => $fpm_pools,
@@ -80,37 +80,49 @@ class webserver::package {
     extensions   => {
       imagick       => {
         provider       => 'apt',
-        package_prefix => 'php-',
+        package_prefix => "php${::php::globals::php_version}-",
       },
       readline      => {
         provider       => 'apt',
-        package_prefix => 'php-',
+        package_prefix => "php${::php::globals::php_version}-",
       },
       curl          => {
         provider       => 'apt',
-        package_prefix => 'php-',
+        package_prefix => "php${::php::globals::php_version}-",
       },
       gd            => {
         provider       => 'apt',
-        package_prefix => 'php-',
+        package_prefix => "php${::php::globals::php_version}-",
       },
       console-table => {
         provider       => 'apt',
-        package_prefix => 'php-',
+        package_prefix => "php-",
       },
       memcached     => {
         provider       => 'apt',
-        package_prefix => 'php-',
+        package_prefix => "php${::php::globals::php_version}-",
       },
-      mcrypt        => {
+      #mcrypt        => {
+      #  provider       => 'apt',
+      #  package_prefix => "php-",
+      #},
+      #xml           => {
+      #  provider       => 'apt',
+      #  package_prefix => "php${::php::globals::php_version}-",
+      #},
+      mbstring           => {
         provider       => 'apt',
-        package_prefix => 'php7.0-',
+        package_prefix => "php${::php::globals::php_version}-",
       },
       igbinary      => {
         provider       => 'apt',
-        package_prefix => 'php-',
+        package_prefix => "php${::php::globals::php_version}-",
       },
     }
+  }
+
+  $http_preprend_config={
+    limit_req_zone => '$binary_remote_addr zone=limitedrate:10m rate=2r/s'
   }
 
   # nginx
@@ -125,7 +137,8 @@ class webserver::package {
     gzip_vary              => 'on',
     gzip_proxied           => 'any',
     gzip_types             =>
-      'text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/x-icon application/vnd.ms-fontobject font/opentype application/x-font-ttf'
+      'text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/x-icon application/vnd.ms-fontobject font/opentype application/x-font-ttf',
+    http_cfg_prepend      => $http_preprend_config
   }
 
   nginx::resource::upstream { 'fpm':

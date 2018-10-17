@@ -43,7 +43,7 @@
 # Copyright 2017 Your name here, unless otherwise noted.
 #
 class webserver (
-
+  Optional[String] $php_version      = $::webserver::params::default_php_version,
   Optional[String] $db_root_password = undef,
   Optional[String] $server_name      = undef,
   Optional[Hash] $fpm_pools          = undef
