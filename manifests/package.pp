@@ -122,7 +122,9 @@ class webserver::package {
   }
 
   $http_preprend_config={
-    limit_req_zone => '$binary_remote_addr zone=limitedrate:10m rate=2r/s'
+    limit_req_zone => '$binary_remote_addr zone=limitedrate:10m rate=2r/s',
+    fastcgi_buffers => '16 16k',
+    fastcgi_buffer_size => '32k'
   }
 
   # nginx
@@ -142,9 +144,29 @@ class webserver::package {
   }
 
   nginx::resource::upstream { 'fpm':
-    members => [
-      'unix:/var/run/php7.0-fpm-www.sock',
-    ]
+    members => {
+      'unix:/var/run/php7.0-fpm-www.sock' => {
+        server => 'unix:/var/run/php7.0-fpm-www.sock'
+      },
+    }  
+    
+  }
+
+  nginx::resource::upstream { 'fpm7.2':
+    members => {
+      'unix:/var/run/php7.2-fpm-www.sock' => {
+        server => 'unix:/var/run/php7.2-fpm-www.sock'
+      },
+    }  
+    
+  }
+
+  nginx::resource::upstream { 'fpm7.3':
+    members => {
+      'unix:/var/run/php7.3-fpm-www.sock' => {
+        server => 'unix:/var/run/php7.3-fpm-www.sock'
+      },
+    }  
   }
 
   file { "/var/www":
