@@ -1,22 +1,24 @@
 define webserver::website (
-  Array[String] $urls             = [],
-  $website_name                   = $title,
-  $unix_user                      = undef,
-  $unix_password                  = undef,
-  Boolean $default                = false,
-  Boolean $https                  = false,
-  Optional[String] $ssl_cert      = undef,
-  Optional[String] $ssl_key       = undef,
-  Optional[String] $unix_group    = $unix_user,
-  String $db_user                 = undef,
-  String $db_pass                 = undef,
-  String $www_root_folder         = "www",
-  Optional[String] $db_name       = undef,
-  Optional[String] $db_host       = 'localhost',
-  Optional[String] $path          = "/var/www/$website_name",
-  Optional[String] $fpm_pool_name = "fpm",
-  Optional[Boolean] $generate_root_location = true, 
-  $rewrite_rules                   = []
+  Array[String] $urls                       = [],
+  $website_name                             = $title,
+  $unix_user                                = undef,
+  $unix_password                            = undef,
+  Boolean $default                          = false,
+  Boolean $https                            = false,
+  Optional[String] $ssl_cert                = undef,
+  Optional[String] $ssl_key                 = undef,
+  Optional[String] $unix_group              = $unix_user,
+  String $db_user                           = undef,
+  String $db_pass                           = undef,
+  String $www_root_folder                   = "www",
+  Optional[String] $auth_basic              = undef,
+  Optional[Hash] $auth_basic_users          = undef,
+  Optional[String] $db_name                 = undef,
+  Optional[String] $db_host                 = 'localhost',
+  Optional[String] $path                    = "/var/www/$website_name",
+  Optional[String] $fpm_pool_name           = "fpm",
+  Optional[Boolean] $generate_root_location = true,
+  $rewrite_rules                            = []
 ) {
 
 
@@ -34,26 +36,54 @@ define webserver::website (
   }
 
   if( $default == true ) {
-    $listen_options="default_server"
-    $ipv6_listen_options="default"
+    $listen_options = "default_server"
+    $ipv6_listen_options = "default"
   } else {
-    $listen_options=undef
-    $ipv6_listen_options=""
+    $listen_options = undef
+    $ipv6_listen_options = ""
   }
 
   $server_cfg_prepend = {
-     root => "${path}/${www_root_folder}"
+    root => "${path}/${www_root_folder}"
   }
+  if( $auth_basic_users ) {
+    $authBasicUserFile = "${path}/${website_name}.auth_users.db"
+    file { "${authBasicUserFile}":
+      ensure => 'present',
+      owner  => $unix_user,
+      group  => $unix_group
+    }
+    $auth_basic_users.each|String $userName, String $userPass | {
+      exec { "create or update user ${userName}":
+        path => [
+          '/bin',
+          '/usr/bin'
+        ],
+        command => "httpasswd -Bb ${authBasicUserFile} ${userName} ${userPass}",
+        user => $unix_user
+
+
+      }
+    }
+  } else {
+    $authBasicUserFile = undef
+  }
+
 
   nginx::resource::server { "${website_name}":
     use_default_location => !$https and $generate_root_location,
-    server_cfg_prepend   => (!$https and $generate_root_location) ? { true => $server_cfg_prepend, false => undef},
+    server_cfg_prepend   => (!$https and $generate_root_location) ? {
+      true  => $server_cfg_prepend,
+      false => undef
+    },
     server_name          => $_urls,
     www_root             => "${path}/${www_root_folder}",
     ipv6_enable          => true,
     listen_port          => 80,
     listen_options       => $listen_options,
     ipv6_listen_options  => $ipv6_listen_options,
+    auth_basic           => $auth_basic,
+    auth_basic_user_file => $authBasicUserFile,
     ssl                  => false,
     ssl_cert             => false,
     rewrite_rules        => $rewrite_rules,
@@ -68,7 +98,10 @@ define webserver::website (
     $servers = [ "${website_name}", "${website_name}.ssl"]
     nginx::resource::server { "$website_name.ssl":
       use_default_location => $generate_root_location,
-      server_cfg_prepend   => $generate_root_location ? { true => $server_cfg_prepend, false => undef},
+      server_cfg_prepend   => $generate_root_location ? {
+        true  => $server_cfg_prepend,
+        false => undef
+      },
       server_name          => $_urls,
       www_root             => "${path}/${www_root_folder}",
       ipv6_enable          => true,
@@ -77,6 +110,8 @@ define webserver::website (
       ssl                  => true,
       ssl_cert             => $ssl_cert,
       ssl_key              => $ssl_key,
+      auth_basic           => $auth_basic,
+      auth_basic_user_file => $authBasicUserFile,
       rewrite_rules        => $rewrite_rules,
       try_files            => ['$uri', '$uri/', 'index.php?$args'],
       access_log           => "/var/log/nginx/${website_name}.ssl/access.log",
@@ -100,22 +135,21 @@ define webserver::website (
     group  => $unix_group
   }
 
-  
-  $parts = split("${www_root_folder}",'/')
-  $partsLen = length( $parts )
+  $parts = split("${www_root_folder}", '/')
+  $partsLen = $parts.length
   if( $partsLen > 1 ) {
-  $path_tree = range(1, $partsLen).map | Integer $index | {
-      inline_epp( '<%= $path %>/<%= $left %>', { 'path' => "${path}", 'left' => join($parts[0, $index],"/")})
-  }
+    $path_tree = range(1, $partsLen).map | Integer $index | {
+      inline_epp('<%= $path %>/<%= $left %>', { 'path' => "${path}", 'left' => join($parts.slice(0, $index), "/") })
+    }
   } else {
     $path_tree = [ "${path}/${www_root_folder}" ]
   }
 
   file { $path_tree:
-    ensure  => 'directory',    
-    mode    => '0755',
-    owner   => $unix_user,
-    group   => $unix_group
+    ensure => 'directory',
+    mode   => '0755',
+    owner  => $unix_user,
+    group  => $unix_group
   }
 
   if( $db_name ) {
@@ -132,7 +166,7 @@ define webserver::website (
   }
 
   $location_cfg_prepend = {
-    limit_req  => 'zone=limitedrate burst=2'
+    limit_req => 'zone=limitedrate burst=2'
   }
   /* generating locations */
   $servers.each | String $serverName | {
@@ -160,10 +194,10 @@ define webserver::website (
     }
 
     nginx::resource::location { "${serverName}.php":
-      index_files => [],
-      server      => $serverName,
-      location    => '~ \.php$',
-      fastcgi     => $fpm_pool_name,
+      index_files          => [],
+      server               => $serverName,
+      location             => '~ \.php$',
+      fastcgi              => $fpm_pool_name,
       location_cfg_prepend => $location_cfg_prepend
     }
   }

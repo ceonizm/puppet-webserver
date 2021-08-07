@@ -67,6 +67,10 @@ class webserver::package {
     $fpm_pools = $webserver::params::default_fpm_pools
   }
 
+  package { 'apache2-utils':
+    ensure => 'installed'
+  }
+
   package { 'imagemagick':
     ensure => 'installed'
   }
@@ -148,8 +152,8 @@ class webserver::package {
       'unix:/var/run/php7.0-fpm-www.sock' => {
         server => 'unix:/var/run/php7.0-fpm-www.sock'
       },
-    }  
-    
+    }
+
   }
 
   nginx::resource::upstream { 'fpm7.2':
@@ -157,8 +161,8 @@ class webserver::package {
       'unix:/var/run/php7.2-fpm-www.sock' => {
         server => 'unix:/var/run/php7.2-fpm-www.sock'
       },
-    }  
-    
+    }
+
   }
 
   nginx::resource::upstream { 'fpm7.3':
@@ -166,7 +170,7 @@ class webserver::package {
       'unix:/var/run/php7.3-fpm-www.sock' => {
         server => 'unix:/var/run/php7.3-fpm-www.sock'
       },
-    }  
+    }
   }
 
   file { "/var/www":
