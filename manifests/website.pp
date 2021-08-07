@@ -139,7 +139,7 @@ define webserver::website (
   $partsLen = $parts.length
   if( $partsLen > 1 ) {
     $path_tree = range(1, $partsLen).map | Integer $index | {
-      inline_epp('<%= $path %>/<%= $left %>', { 'path' => "${path}", 'left' => join($parts.slice(0, $index), "/") })
+      inline_epp('<%= $path %>/<%= $left %>', { 'path' => "${path}", 'left' => join($parts[0, $index], "/") })
     }
   } else {
     $path_tree = [ "${path}/${www_root_folder}" ]
