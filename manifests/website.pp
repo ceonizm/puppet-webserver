@@ -59,7 +59,7 @@ define webserver::website (
           '/bin',
           '/usr/bin'
         ],
-        command => "httpasswd -Bb ${authBasicUserFile} ${userName} ${userPass}",
+        command => "htpasswd -Bb ${authBasicUserFile} ${userName} ${userPass}",
         user => $unix_user
 
 
