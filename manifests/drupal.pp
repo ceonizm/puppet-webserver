@@ -1,44 +1,48 @@
 define webserver::drupal (
 
-  Array[String] $urls          = [],
-  $website_name                = $title,
-  $unix_user                   = undef,
-  $unix_password               = undef,
-  $https                       = false,
-  Optional[String] $ssl_cert   = undef,
-  Optional[String] $ssl_key    = undef,
-  String $db_user              = undef,
-  String $db_pass              = undef,
-  String $www_root_folder      = "www",
-  Optional[String] $unix_group = $unix_user,
-  Optional[String] $db_name    = undef,
-  Optional[String] $db_host    = 'localhost',
-  Optional[String] $path       = "/var/www/$title",
-  Optional[String] $fpm_pool   = "fpm",
-  Optional[Integer] $version   = 7
+  Array[String] $urls              = [],
+  $website_name                    = $title,
+  $unix_user                       = undef,
+  $unix_password                   = undef,
+  $https                           = false,
+  Optional[String] $ssl_cert       = undef,
+  Optional[String] $ssl_key        = undef,
+  String $db_user                  = undef,
+  String $db_pass                  = undef,
+  String $www_root_folder          = "www",
+  Optional[String] $unix_group     = $unix_user,
+  Optional[String] $db_name        = undef,
+  Optional[String] $db_host        = 'localhost',
+  Optional[String] $path           = "/var/www/$title",
+  Optional[String] $auth_basic     = undef,
+  Optional[Hash] $auth_basic_users = undef,
+  Optional[String] $fpm_pool       = "fpm",
+  Optional[Integer] $version       = 7
 ) {
 
-  ensure_packages(['drush'], {'ensure'=>'present'})
+  ensure_packages(['drush'], { 'ensure' => 'present' })
 
   webserver::website { $title:
-    urls            => $urls,
-    website_name    => $website_name,
-    unix_user       => $unix_user,
-    unix_password   => $unix_password,
-    unix_group      => $unix_group,
-    https           => $https,
-    ssl_cert        => $ssl_cert,
-    ssl_key         => $ssl_key,
-    db_user         => $db_user,
-    db_pass         => $db_pass,
-    db_name         => $db_name,
-    db_host         => $db_host,
-    path            => $path,
-    www_root_folder => $www_root_folder,
-    fpm_pool_name   => $fpm_pool,
+    urls                   => $urls,
+    website_name           => $website_name,
+    unix_user              => $unix_user,
+    unix_password          => $unix_password,
+    unix_group             => $unix_group,
+    https                  => $https,
+    ssl_cert               => $ssl_cert,
+    ssl_key                => $ssl_key,
+    db_user                => $db_user,
+    db_pass                => $db_pass,
+    db_name                => $db_name,
+    db_host                => $db_host,
+    path                   => $path,
+    auth_basic             => $auth_basic,
+    auth_basic_users       => $auth_basic_users,
+    www_root_folder        => $www_root_folder,
+    fpm_pool_name          => $fpm_pool,
     generate_root_location => false
   }
-  
+
 
 
   if( $https ) {
