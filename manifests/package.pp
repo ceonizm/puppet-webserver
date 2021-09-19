@@ -56,7 +56,7 @@ class webserver::package {
   Class['::mysql::client']
 
   class { '::php::globals':
-    php_version => '7.0',
+    php_version => $webserver::php_version,
   }
 
 
@@ -67,12 +67,16 @@ class webserver::package {
     $fpm_pools = $webserver::params::default_fpm_pools
   }
 
+  package { 'apache2-utils':
+    ensure => 'installed'
+  }
+
   package { 'imagemagick':
     ensure => 'installed'
   }
 
   class { '::php':
-    ensure       => 'latest',
+    ensure       => 'installed',
     manage_repos => true,
     fpm          => true,
     fpm_pools    => $fpm_pools,
@@ -80,37 +84,51 @@ class webserver::package {
     extensions   => {
       imagick       => {
         provider       => 'apt',
-        package_prefix => 'php-',
+        package_prefix => "php${::php::globals::php_version}-",
       },
       readline      => {
         provider       => 'apt',
-        package_prefix => 'php-',
+        package_prefix => "php${::php::globals::php_version}-",
       },
       curl          => {
         provider       => 'apt',
-        package_prefix => 'php-',
+        package_prefix => "php${::php::globals::php_version}-",
       },
       gd            => {
         provider       => 'apt',
-        package_prefix => 'php-',
+        package_prefix => "php${::php::globals::php_version}-",
       },
       console-table => {
         provider       => 'apt',
-        package_prefix => 'php-',
+        package_prefix => "php-",
       },
       memcached     => {
         provider       => 'apt',
-        package_prefix => 'php-',
+        package_prefix => "php${::php::globals::php_version}-",
       },
-      mcrypt        => {
+      #mcrypt        => {
+      #  provider       => 'apt',
+      #  package_prefix => "php-",
+      #},
+      #xml           => {
+      #  provider       => 'apt',
+      #  package_prefix => "php${::php::globals::php_version}-",
+      #},
+      mbstring           => {
         provider       => 'apt',
-        package_prefix => 'php7.0-',
+        package_prefix => "php${::php::globals::php_version}-",
       },
       igbinary      => {
         provider       => 'apt',
-        package_prefix => 'php-',
+        package_prefix => "php${::php::globals::php_version}-",
       },
     }
+  }
+
+  $http_preprend_config={
+    limit_req_zone => '$binary_remote_addr zone=limitedrate:10m rate=2r/s',
+    fastcgi_buffers => '16 16k',
+    fastcgi_buffer_size => '32k'
   }
 
   # nginx
@@ -125,13 +143,34 @@ class webserver::package {
     gzip_vary              => 'on',
     gzip_proxied           => 'any',
     gzip_types             =>
-      'text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/x-icon application/vnd.ms-fontobject font/opentype application/x-font-ttf'
+      'text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/x-icon application/vnd.ms-fontobject font/opentype application/x-font-ttf',
+    http_cfg_prepend      => $http_preprend_config
   }
 
   nginx::resource::upstream { 'fpm':
-    members => [
-      'unix:/var/run/php7.0-fpm-www.sock',
-    ]
+    members => {
+      'unix:/var/run/php7.0-fpm-www.sock' => {
+        server => 'unix:/var/run/php7.0-fpm-www.sock'
+      },
+    }
+
+  }
+
+  nginx::resource::upstream { 'fpm7.2':
+    members => {
+      'unix:/var/run/php7.2-fpm-www.sock' => {
+        server => 'unix:/var/run/php7.2-fpm-www.sock'
+      },
+    }
+
+  }
+
+  nginx::resource::upstream { 'fpm7.3':
+    members => {
+      'unix:/var/run/php7.3-fpm-www.sock' => {
+        server => 'unix:/var/run/php7.3-fpm-www.sock'
+      },
+    }
   }
 
   file { "/var/www":
