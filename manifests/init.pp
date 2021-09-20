@@ -35,7 +35,7 @@
 # Authors
 # -------
 #
-# Author Name <author@domain.com>
+# Author François Boukhalfa <francois@ceonizme.fr>
 #
 # Copyright
 # ---------
@@ -43,13 +43,13 @@
 # Copyright 2017 Your name here, unless otherwise noted.
 #
 class webserver (
-  Optional[String] $php_version      = $::webserver::params::default_php_version,
-  Optional[String] $db_root_password = undef,
-  Optional[String] $server_name      = undef,
-  Optional[Hash] $fpm_pools          = undef
+  Optional[String] $php_version        = $::webserver::params::default_php_version,
+  Optional[Boolean] $install_db_server = $::webserver::params::default_install_db_server,
+  Optional[String] $db_root_password   = undef,
+  Optional[String] $server_name        = undef,
+  Optional[Hash] $fpm_pools            = undef
 ) inherits webserver::params {
   contain '::webserver::package'
-
 
 
 }

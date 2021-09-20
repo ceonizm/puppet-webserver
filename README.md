@@ -1,4 +1,4 @@
-# website
+# Puppet webserver
 
 #### Table of Contents
 
@@ -14,14 +14,13 @@
 
 ## Description
 
-Start with a one- or two-sentence summary of what the module does and/or what
-problem it solves. This is your 30-second elevator pitch for your module.
-Consider including OS/Puppet version it works with.
-
-You can give more descriptive information in a second paragraph. This paragraph
-should answer the questions: "What does this module *do*?" and "Why would I use
-it?" If your module has a range of functionality (installation, configuration,
-management, etc.), this is the time to mention it.
+This module aims to install a ready to use web stack containing
+ * nginx
+ * php
+ * mysql
+ * nginx vhost resource entry point for 
+   * drupal 7/8/9
+   * generic website
 
 ## Setup
 
