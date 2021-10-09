@@ -1,32 +1,44 @@
 define webserver::website (
-  Array[String] $urls                       = [],
-  $website_name                             = $title,
-  $unix_user                                = undef,
-  $unix_password                            = undef,
-  Boolean $default                          = false,
-  Boolean $https                            = false,
-  Optional[String] $ssl_cert                = undef,
-  Optional[String] $ssl_key                 = undef,
-  Optional[String] $unix_group              = $unix_user,
-  String $db_user                           = undef,
-  String $db_pass                           = undef,
-  String $www_root_folder                   = "www",
-  Optional[String] $auth_basic              = undef,
-  Optional[Hash] $auth_basic_users          = undef,
-  Optional[String] $db_name                 = undef,
-  Optional[String] $db_host                 = 'localhost',
-  Optional[String] $path                    = "/var/www/$website_name",
-  Optional[String] $fpm_pool_name           = "fpm",
-  Optional[Boolean] $generate_root_location = true,
-  $rewrite_rules                            = []
+  Array[String] $urls                                  = [],
+  String $website_name                                 = $title,
+  String $unix_user                                    = undef,
+  Optional[Array[String]] $unix_user_keys              = [],
+  Optional[String] $unix_password                      = undef,
+  Boolean $default                                     = false,
+  Boolean $https                                       = false,
+  Boolean $robots                                      = true,
+  Optional[String] $ssl_cert                           = undef,
+  Optional[String] $ssl_key                            = undef,
+  Optional[Variant[String, Array[String]]] $unix_group = $unix_user,
+  String $db_user                                      = undef,
+  String $db_pass                                      = undef,
+  String $www_root_folder                              = "www",
+  Optional[String] $auth_basic                         = undef,
+  Optional[Hash] $auth_basic_users                     = undef,
+  Optional[String] $db_name                            = undef,
+  Optional[String] $db_host                            = 'localhost',
+  Optional[String] $path                               = "/var/www/$website_name",
+  Optional[String] $fpm_pool_name                      = "fpm",
+  Optional[Boolean] $generate_root_location            = true,
+  $rewrite_rules                                       = []
 ) {
 
 
-  user { $unix_user:
-    ensure   => 'present',
-    home     => $path,
-    groups   => 'web',
-    password => pw_hash($unix_password, 'SHA-512', 'mysalt')
+  if( $unix_password ) {
+    user { $unix_user:
+      ensure   => 'present',
+      home     => $path,
+      groups   => $unix_group,
+      keys     => $unix_user_keys,
+      password => pw_hash($unix_password, 'SHA-512', 'mysalt')
+    }
+  } else {
+    user { $unix_user:
+      ensure => 'present',
+      home   => $path,
+      groups => $unix_group,
+      keys   => $unix_user_keys,
+    }
   }
 
   if( size($urls) == 0 ) {
@@ -53,14 +65,14 @@ define webserver::website (
       owner  => $unix_user,
       group  => $unix_group
     }
-    $auth_basic_users.each|String $userName, String $userPass | {
+    $auth_basic_users.each |String $userName, String $userPass | {
       exec { "create or update user ${userName}":
-        path => [
+        path    => [
           '/bin',
           '/usr/bin'
         ],
         command => "htpasswd -b ${authBasicUserFile} ${userName} ${userPass}",
-        user => $unix_user
+        user    => $unix_user
 
 
       }
@@ -177,20 +189,42 @@ define webserver::website (
       location      => '~ \.htaccess$',
       location_deny => ['all'],
     }
+
+    nginx::resource::location { "${serverName}.empty":
+      index_files => [],
+      location    => '@empty',
+      expires     => '30d',
+      raw_append  => '
+      empty_gif;
+      '
+    }
     nginx::resource::location { "${serverName}.favico":
-      index_files   => [],
-      server        => $serverName,
-      location      => '/favicon.ico',
-      log_not_found => 'off',
-      access_log    => 'off'
+      index_files => [],
+      server      => $serverName,
+      expires     => '30d',
+      try_files   => ['$uri', '@empty'],
+      location    => '/favicon.ico',
+      raw_append  => '
+        log_not_found off;
+        access_log off;
+      '
+      # log_not_found => 'off',
+      # access_log    => 'off'
     }
 
-    nginx::resource::location { "${serverName}.robots.txt":
-      index_files   => [],
-      server        => $serverName,
-      location      => '/robots.txt',
-      log_not_found => 'off',
-      access_log    => 'off'
+
+    if( $robots ) {
+      nginx::resource::location { "${serverName}.robots.txt":
+        index_files => [],
+        server      => $serverName,
+        location    => '/robots.txt',
+        raw_append  => '
+        log_not_found off;
+        access_log off;
+      '
+        # log_not_found => 'off',
+        # access_log    => 'off'
+      }
     }
 
     nginx::resource::location { "${serverName}.php":
