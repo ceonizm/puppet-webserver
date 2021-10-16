@@ -172,11 +172,13 @@ define webserver::website (
       dbname   => $db_name,
       user     => $db_user,
       password => $db_pass,
+      host     => $db_host
     }
   } else {
     mysql::db { "${website_name}":
       user     => $db_user,
       password => $db_pass,
+      host     => $db_host
     }
   }
 
