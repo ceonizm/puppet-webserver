@@ -168,19 +168,20 @@ define webserver::website (
   }
 
   if( $db_name ) {
+    Notify { "${db_user}:${db_pass}@${db_host}/${db_name}":}
     mysql::db { "${website_name}":
       dbname   => $db_name,
       user     => $db_user,
       password => $db_pass,
       host     => $db_host
     }
-  } else {
+  } /*else {
     mysql::db { "${website_name}":
       user     => $db_user,
       password => $db_pass,
       host     => $db_host
     }
-  }
+  }*/
 
   $location_cfg_prepend = {
     limit_req => 'zone=limitedrate burst=2'
