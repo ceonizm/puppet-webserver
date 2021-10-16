@@ -149,15 +149,17 @@ class webserver (
     }
   }
 
-  file { "/etc/php/${::php::globals::php_version}/cli/21-memcached.ini":
-    ensure => 'file',
-    source => "/etc/php/${::php::globals::php_version}/cli/20-memcached.ini",
-    require => "/etc/php/${::php::globals::php_version}/cli/20-memcached.ini"
-  }
-  file { "/etc/php/${::php::globals::php_version}/fpm/21-memcached.ini":
-    ensure => 'file',
-    source => "/etc/php/${::php::globals::php_version}/fpm/20-memcached.ini",
-    require => "/etc/php/${::php::globals::php_version}/fpm/20-memcached.ini"
+  if( Deferred( "find_file", ["/etc/php/${::php::globals::php_version}/cli/20-memcached.ini"] ) ) {
+    file { "/etc/php/${::php::globals::php_version}/cli/21-memcached.ini":
+      ensure  => 'file',
+      source  => "/etc/php/${::php::globals::php_version}/cli/20-memcached.ini",
+      require => "/etc/php/${::php::globals::php_version}/cli/20-memcached.ini"
+    }
+    file { "/etc/php/${::php::globals::php_version}/fpm/21-memcached.ini":
+      ensure  => 'file',
+      source  => "/etc/php/${::php::globals::php_version}/fpm/20-memcached.ini",
+      require => "/etc/php/${::php::globals::php_version}/fpm/20-memcached.ini"
+    }
   }
 
   $http_preprend_config = {
