@@ -153,7 +153,7 @@ class webserver (
     user     => "root",
     path     => [ '/bin/', '/sbin/', '/usr/bin/', '/usr/sbin/' ],
     provider => "shell",
-    onlyif   => sprintf('! test -f /etc/php/%s/cli/20-memcached.ini', $::php::globals::php_version),
+    onlyif   => sprintf('test -f /etc/php/%s/cli/20-memcached.ini', $::php::globals::php_version),
     command  => "mv /etc/php/${::php::globals::php_version}/cli/20-memcached.ini /etc/php/${::php::globals::php_version}/cli/21-memcached.ini"
   }
 
@@ -161,7 +161,7 @@ class webserver (
     user     => "root",
     path     => [ '/bin/', '/sbin/', '/usr/bin/', '/usr/sbin/' ],
     provider => "shell",
-    onlyif   => sprintf('! test -f /etc/php/%s/fpm/20-memcached.ini', $::php::globals::php_version),
+    onlyif   => sprintf('test -f /etc/php/%s/fpm/20-memcached.ini', $::php::globals::php_version),
     command  => "mv /etc/php/${::php::globals::php_version}/fpm/20-memcached.ini /etc/php/${::php::globals::php_version}/cli/21-memcached.ini"
   }
 
