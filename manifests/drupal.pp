@@ -10,6 +10,7 @@ define webserver::drupal (
   String $db_user                  = undef,
   String $db_pass                  = undef,
   String $www_root_folder          = "www",
+  Optional[Boolean] $manage_drush  = true,
   Optional[String] $unix_group     = $unix_user,
   Optional[String] $db_name        = undef,
   Optional[String] $db_host        = 'localhost',
@@ -20,7 +21,9 @@ define webserver::drupal (
   Optional[Integer] $version       = 7
 ) {
 
-  ensure_packages(['drush'], { 'ensure' => 'present' })
+  if( $manage_drush ) {
+    ensure_packages(['drush'], { 'ensure' => 'present' })
+  }
 
   webserver::website { $title:
     urls                   => $urls,
