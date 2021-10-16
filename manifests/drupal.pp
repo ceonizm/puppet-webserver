@@ -160,6 +160,7 @@ define webserver::drupal (
     }
 
     nginx::resource::location { "${serverName}.hide-files":
+      server      => $serverName,
       location => '~* ^(?:.+\.(?:htaccess|make|txt|engine|inc|info|install|module|profile|po|pot|sh|.*sql|test|theme|tpl(?:\.php)?|xtmpl)|code-style\.pl|/Entries.*|/Repository|/Root|/Tag|/Template)$',
       raw_append => '
         return 404;
@@ -180,12 +181,14 @@ define webserver::drupal (
     }
 
     nginx::resource::location { "${serverName}.rss.xml":
+      server      => $serverName,
       index_files => [],
       location    => '/rss.xml',
       try_files   => ['$uri', '@drupal'],
     }
 
     nginx::resource::location { "${serverName}.sitemap.xml":
+      server      => $serverName,
       index_files => [],
       location    => '/sitemap.xml',
       try_files   => ['$uri', '@drupal'],

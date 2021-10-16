@@ -24,6 +24,9 @@ define webserver::website (
 ) {
 
 
+  group { $unix_group:
+    ensure => 'present'
+  }
   if( $unix_password ) {
     user { $unix_user:
       ensure   => 'present',
@@ -191,6 +194,7 @@ define webserver::website (
     }
 
     nginx::resource::location { "${serverName}.empty":
+      server      => $serverName,
       index_files => [],
       location    => '@empty',
       expires     => '30d',

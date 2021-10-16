@@ -122,6 +122,10 @@ class webserver (
       "Console_Table" => {
         provider       => 'pear',
       },
+      msgpack     => {
+        provider       => 'apt',
+        package_prefix => "php${::php::globals::php_version}-",
+      },
       memcached     => {
         provider       => 'apt',
         package_prefix => "php${::php::globals::php_version}-",
@@ -130,10 +134,10 @@ class webserver (
       #  provider       => 'apt',
       #  package_prefix => "php-",
       #},
-      #xml           => {
-      #  provider       => 'apt',
-      #  package_prefix => "php${::php::globals::php_version}-",
-      #},
+      xml           => {
+       provider       => 'apt',
+       package_prefix => "php${::php::globals::php_version}-",
+      },
       mbstring      => {
         provider       => 'apt',
         package_prefix => "php${::php::globals::php_version}-",
@@ -143,6 +147,15 @@ class webserver (
         package_prefix => "php${::php::globals::php_version}-",
       },
     }
+  }
+
+  file { "/etc/php/${::php::globals::php_version}/cli/21-memcached.ini":
+    ensure => 'file',
+    source => "/etc/php/${::php::globals::php_version}/cli/20-memcached.ini"
+  }
+  file { "/etc/php/${::php::globals::php_version}/fpm/21-memcached.ini":
+    ensure => 'file',
+    source => "/etc/php/${::php::globals::php_version}/fpm/20-memcached.ini"
   }
 
   $http_preprend_config = {
