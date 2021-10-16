@@ -152,14 +152,14 @@ class webserver (
   exec { 'rename cli memcached.ini if needed:':
     user => "root",
     path => ['/usr/bin','/sbin','/bin'],
-    onlyif => concat('! test -f /etc/php/', $::php::globals::php_version, '/cli/20-memcached.ini'),
+    onlyif => sprintf('! test -f /etc/php/%s/cli/20-memcached.ini', $::php::globals::php_version),
     command => "mv /etc/php/${::php::globals::php_version}/cli/20-memcached.ini /etc/php/${::php::globals::php_version}/cli/21-memcached.ini"
   }
 
   exec { 'rename fpm memcached.ini if needed:':
     user => "root",
     path => ['/usr/bin','/sbin','/bin'],
-    onlyif => concat('! test -f /etc/php/', $::php::globals::php_version, '/fpm/20-memcached.ini'),
+    onlyif => sprintf('! test -f /etc/php/%s/fpm/20-memcached.ini', $::php::globals::php_version),
     command => "mv /etc/php/${::php::globals::php_version}/fpm/20-memcached.ini /etc/php/${::php::globals::php_version}/cli/21-memcached.ini"
   }
 
