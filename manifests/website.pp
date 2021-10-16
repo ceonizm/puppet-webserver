@@ -167,13 +167,16 @@ define webserver::website (
     group  => $unix_group
   }
 
+
   if( $db_name ) {
     Notify { "${db_user}:${db_pass}@${db_host}/${db_name}":}
     mysql::db { "${website_name}":
       dbname   => $db_name,
       user     => $db_user,
       password => $db_pass,
-      host     => $db_host
+      host     => $db_host,
+      charset  => 'utf8mb4',
+      collate  => 'utf8mb4_general_ci'
     }
   } /*else {
     mysql::db { "${website_name}":
