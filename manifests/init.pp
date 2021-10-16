@@ -149,16 +149,20 @@ class webserver (
     }
   }
 
-  if( find_file("/etc/php/${::php::globals::php_version}/cli/20-memcached.ini" ) ) {
-    file { "/etc/php/${::php::globals::php_version}/cli/21-memcached.ini":
-      ensure  => 'file',
-      source  => "/etc/php/${::php::globals::php_version}/cli/20-memcached.ini"
-    }
-    file { "/etc/php/${::php::globals::php_version}/fpm/21-memcached.ini":
-      ensure  => 'file',
-      source  => "/etc/php/${::php::globals::php_version}/fpm/20-memcached.ini"
-    }
+  exec { 'rename cli memcached.ini if needed:':
+    user => "root",
+    path => ['/usr/bin','/sbin','/bin'],
+    onlyif => "! test -f /etc/php/${::php::globals::php_version}/cli/20-memcached.ini",
+    command => "mv /etc/php/${::php::globals::php_version}/cli/20-memcached.ini /etc/php/${::php::globals::php_version}/cli/21-memcached.ini"
   }
+
+  exec { 'rename fpm memcached.ini if needed:':
+    user => "root",
+    path => ['/usr/bin','/sbin','/bin'],
+    onlyif => "! test -f /etc/php/${::php::globals::php_version}/fpm/20-memcached.ini",
+    command => "mv /etc/php/${::php::globals::php_version}/fpm/20-memcached.ini /etc/php/${::php::globals::php_version}/cli/21-memcached.ini"
+  }
+
 
   $http_preprend_config = {
     limit_req_zone      => '$binary_remote_addr zone=limitedrate:10m rate=2r/s',
