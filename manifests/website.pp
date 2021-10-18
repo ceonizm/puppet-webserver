@@ -168,7 +168,7 @@ define webserver::website (
   }
 
 
-  if( $db_name ) {
+  if( $db_name and $db_host == 'localhost') {
     Notify { "${db_user}:${db_pass}@${db_host}/${db_name}":}
     mysql::db { "${website_name}":
       dbname   => $db_name,
