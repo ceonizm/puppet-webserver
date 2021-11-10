@@ -134,6 +134,10 @@ class webserver (
       #  provider       => 'apt',
       #  package_prefix => "php-",
       #},
+      mysql         => {
+        provider    => 'apt',
+        package_prefix => "php${::php::globals::php_version}-",
+      },
       xml           => {
        provider       => 'apt',
        package_prefix => "php${::php::globals::php_version}-",
