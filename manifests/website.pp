@@ -28,16 +28,18 @@ define webserver::website (
     ensure => 'present'
   }
   if( $unix_password ) {
-    user { $unix_user:
+    user { "website-${unix_user}":
       ensure   => 'present',
+      name     => $unix_user,
       home     => $path,
       groups   => $unix_group,
       keys     => $unix_user_keys,
       password => pw_hash($unix_password, 'SHA-512', 'mysalt')
     }
   } else {
-    user { $unix_user:
+    user { "website-${unix_user}":
       ensure => 'present',
+      name     => $unix_user,
       home   => $path,
       groups => $unix_group,
       keys   => $unix_user_keys,
