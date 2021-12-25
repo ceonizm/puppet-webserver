@@ -24,25 +24,29 @@ define webserver::website (
 ) {
 
 
-  group { $unix_group:
-    ensure => 'present'
-  }
-  if( $unix_password ) {
-    user { "website-${unix_user}":
-      ensure   => 'present',
-      name     => $unix_user,
-      home     => $path,
-      groups   => $unix_group,
-      keys     => $unix_user_keys,
-      password => pw_hash($unix_password, 'SHA-512', 'mysalt')
+
+
+  if( ! $userdir ) {
+    group { $unix_group:
+      ensure => 'present'
     }
-  } else {
-    user { "website-${unix_user}":
-      ensure => 'present',
-      name     => $unix_user,
-      home   => $path,
-      groups => $unix_group,
-      keys   => $unix_user_keys,
+    if( $unix_password ) {
+      user { "website-${unix_user}":
+        ensure   => 'present',
+        name     => $unix_user,
+        home     => $path,
+        groups   => $unix_group,
+        keys     => $unix_user_keys,
+        password => pw_hash($unix_password, 'SHA-512', 'mysalt')
+      }
+    } else {
+      user { "website-${unix_user}":
+        ensure => 'present',
+        name   => $unix_user,
+        home   => $path,
+        groups => $unix_group,
+        keys   => $unix_user_keys,
+      }
     }
   }
 
