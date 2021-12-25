@@ -25,6 +25,7 @@ define webserver::website (
 
 
 
+  $userdir = Deferred('get_homedir', [$unix_user]);
 
   if( ! $userdir ) {
     group { $unix_group:
