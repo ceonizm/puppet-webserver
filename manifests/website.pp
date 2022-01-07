@@ -23,11 +23,7 @@ define webserver::website (
   $rewrite_rules                                       = []
 ) {
 
-
-
-  $userdir = Deferred('get_homedir', [$unix_user]);
-
-  if( ! $userdir ) {
+  if( !($unix_user in $facts['users'].split(',')) and !defined(User[$unix_user])) {
     group { $unix_group:
       ensure => 'present'
     }
