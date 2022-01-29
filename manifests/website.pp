@@ -146,11 +146,13 @@ define webserver::website (
     group  => $::nginx::log_group
   }
 
-  file { "${path}":
-    ensure => 'directory',
-    mode   => '0755',
-    owner  => $unix_user,
-    group  => $unix_group
+  if( !defined( File[$path])) {
+    file { "${path}":
+      ensure => 'directory',
+      mode   => '0755',
+      owner  => $unix_user,
+      group  => $unix_group
+    }
   }
 
   $parts = split("${www_root_folder}", '/')
