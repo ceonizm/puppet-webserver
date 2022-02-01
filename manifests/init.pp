@@ -201,11 +201,13 @@ class webserver (
     }
   }
 
-  file { "/var/www":
-    ensure => 'directory',
-    mode   => '0755',
-    owner  => 'root',
-    group  => 'web'
+  if( !defined(File['/var/www'])) {
+    file { "/var/www":
+      ensure => 'directory',
+      mode   => '0755',
+      owner  => 'root',
+      group  => 'web'
+    }
   }
 }
 
