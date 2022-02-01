@@ -42,16 +42,19 @@ class webserver::package {
     Class['::mysql::server']
   }
 
-  class { '::mysql::client':
-    package_name    => 'mariadb-client',
-    #    package_ensure  => '10.1.14+maria-1~trusty',
-    bindings_enable => false,
+  if( !defined( Class[Mysql::Client]) ) {
+    class { '::mysql::client':
+      package_name    => 'mariadb-client',
+      #    package_ensure  => '10.1.14+maria-1~trusty',
+      bindings_enable => false,
+    }
   }
-
-  class { 'mysql::bindings':
-    perl_enable   => false,
-    python_enable => false,
-    java_enable   => false,
+  if( !defined(Class[Mysql::Bindings])) {
+    class { 'mysql::bindings':
+      perl_enable   => false,
+      python_enable => false,
+      java_enable   => false,
+    }
   }
   # Dependency management. Only use that part if you are installing the repository as shown in the Preliminary step of this example.
   Apt::Source['mariadb'] ~>
