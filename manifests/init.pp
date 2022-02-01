@@ -45,13 +45,14 @@
 class webserver (
   Optional[String] $php_version        = $::webserver::params::default_php_version,
   Optional[Boolean] $install_db_server = $::webserver::params::default_install_db_server,
+  Optional[String] $web_user           = $::webserver::params::default_web_user,
+  Optional[String] $web_group          = $::webserver::params::default_web_group,
   Optional[String] $db_root_password   = undef,
   Optional[String] $server_name        = undef,
   Optional[Hash] $fpm_pools            = undef
 ) inherits webserver::params {
-  group { 'web':
-    ensure => 'present',
-    gid    => '502',
+  group { $web_group:
+    ensure => 'present'
   }
 
 
@@ -206,7 +207,8 @@ class webserver (
       ensure => 'directory',
       mode   => '0755',
       owner  => 'root',
-      group  => 'web'
+      group  => $web_group,
+      require => Group[$web_group]
     }
   }
 }
