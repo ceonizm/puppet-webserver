@@ -3,20 +3,21 @@ class webserver::package {
 
   include apt
 
-  apt::source { 'mariadb':
-    location => "http://mirror.klaus-uwe.me/mariadb/repo/${webserver::params::default_mariadb_version}/ubuntu",
-    release  => $::lsbdistcodename,
-    repos    => 'main',
-    key      => {
-      id     => '177F4010FE56CA3336300305F1656F24C74CD1D8',
-      server => 'hkp://keyserver.ubuntu.com:80',
-    },
-    include  => {
-      src => false,
-      deb => true,
-    },
+  if( ! defined(Apt::Source[mariadb])) {
+    apt::source { 'mariadb':
+      location => "http://mirror.klaus-uwe.me/mariadb/repo/${webserver::params::default_mariadb_version}/ubuntu",
+      release  => $::lsbdistcodename,
+      repos    => 'main',
+      key      => {
+        id     => '177F4010FE56CA3336300305F1656F24C74CD1D8',
+        server => 'hkp://keyserver.ubuntu.com:80',
+      },
+      include  => {
+        src => false,
+        deb => true,
+      },
+    }
   }
-
   if ( $webserver::install_db_server == true ) {
     class { '::mysql::server':
       package_name     => 'mariadb-server',
