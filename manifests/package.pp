@@ -42,14 +42,14 @@ class webserver::package {
     Class['::mysql::server']
   }
 
-  if( !defined( Class[Mysql::Client]) ) {
+  if( !defined( Class['Mysql::Client']) ) {
     class { '::mysql::client':
       package_name    => 'mariadb-client',
       #    package_ensure  => '10.1.14+maria-1~trusty',
       bindings_enable => false,
     }
   }
-  if( !defined(Class[Mysql::Bindings])) {
+  if( !defined(Class['Mysql::Bindings'])) {
     class { 'mysql::bindings':
       perl_enable   => false,
       python_enable => false,
