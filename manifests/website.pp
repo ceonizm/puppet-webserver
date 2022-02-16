@@ -192,7 +192,7 @@ define webserver::website (
   }*/
 
   $location_cfg_prepend = {
-    limit_req => 'zone=limitedrate burst=2'
+    limit_req => 'zone=limitedrate burst=5 nodelay'
   }
   /* generating locations */
   $servers.each | String $serverName | {
