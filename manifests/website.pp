@@ -191,9 +191,14 @@ define webserver::website (
     }
   }*/
 
-  $location_cfg_prepend = {
-    limit_req => 'zone=limitedrate burst=5 nodelay'
+  if( $webserver::limit_req_zone == true ) {
+    $location_cfg_prepend = {
+      limit_req => 'zone=limitedrate burst=5 nodelay'
+    }
+  } else {
+    $location_cfg_prepend = {}
   }
+
   /* generating locations */
   $servers.each | String $serverName | {
 
