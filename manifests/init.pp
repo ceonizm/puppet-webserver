@@ -47,6 +47,8 @@ class webserver (
   Optional[Boolean] $install_db_server = $::webserver::params::default_install_db_server,
   Optional[String] $web_user           = $::webserver::params::default_web_user,
   Optional[String] $web_group          = $::webserver::params::default_web_group,
+  Optional[Boolean] $limit_req_zone    = true,
+  Optional[Integer] $limit_req_zone_rate = 5,
   Optional[String] $db_root_password   = undef,
   Optional[String] $server_name        = undef,
   Optional[Hash] $fpm_pools            = undef
@@ -171,11 +173,19 @@ class webserver (
   }
 
 
-  $http_preprend_config = {
-    limit_req_zone      => '$binary_remote_addr zone=limitedrate:10m rate=2r/s',
+  $base_http_preprend_config = {
     fastcgi_buffers     => '16 16k',
     fastcgi_buffer_size => '32k',
     fastcgi_read_timeout => 3000
+  }
+
+  if( $limit_req_zone ) {
+
+    $prepend_limit_req_zone = {
+      limit_req_zone => "\$binary_remote_addr zone=limitedrate:10m rate=${limit_req_zone_rate}r/s"
+    }
+  } else {
+    $prepend_limit_req_zone = { }
   }
 
   # nginx
@@ -192,7 +202,7 @@ class webserver (
     gzip_types             =>
       'text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/x-icon application/vnd.ms-fontobject font/opentype application/x-font-ttf'
     ,
-    http_cfg_prepend       => $http_preprend_config,
+    http_cfg_prepend       => $base_http_preprend_config + $prepend_limit_req_zone,
 
   }
 
