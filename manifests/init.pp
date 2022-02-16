@@ -174,7 +174,8 @@ class webserver (
   $http_preprend_config = {
     limit_req_zone      => '$binary_remote_addr zone=limitedrate:10m rate=2r/s',
     fastcgi_buffers     => '16 16k',
-    fastcgi_buffer_size => '32k'
+    fastcgi_buffer_size => '32k',
+    fastcgi_read_timeout => 3000
   }
 
   # nginx
@@ -185,13 +186,14 @@ class webserver (
     server_tokens          => 'off',
     gzip                   => 'on',
     gzip_disable           => 'msie6',
-    gzip_http_version      => '1.1',
+    gzip_http_version      => '1.0',
     gzip_vary              => 'on',
     gzip_proxied           => 'any',
     gzip_types             =>
       'text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/x-icon application/vnd.ms-fontobject font/opentype application/x-font-ttf'
     ,
-    http_cfg_prepend       => $http_preprend_config
+    http_cfg_prepend       => $http_preprend_config,
+
   }
 
   nginx::resource::upstream { 'fpm':
